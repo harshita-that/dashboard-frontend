@@ -34,6 +34,7 @@ export default function TeachersPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+ 
   const [total, setTotal] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Teacher | null>(null);
@@ -44,17 +45,25 @@ export default function TeachersPage() {
   const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const fetchTeachers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await teacherService.getAll({ page, limit: 10, search });
-      setTeachers(res.data);
-      setTotal(res.pagination.total);
-      setTotalPages(res.pagination.pages);
-    } catch { toast("Failed to load teachers", { variant: "destructive" }); }
-    finally { setLoading(false); }
-  }, [page, search]);
+  setLoading(true);
 
-  useEffect(() => { fetchTeachers(); }, [fetchTeachers]);
+  try {
+    const res = await teacherService.getAll({
+      page,
+      limit: 10,
+    });
+
+    setTeachers(res.data);
+    setTotal(res.pagination.total);
+    setTotalPages(res.pagination.pages);
+  } catch {
+    toast("Failed to load teachers", {
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+}, [page]);
 
   const openCreate = () => { setEditing(null); reset({}); setModalOpen(true); };
   const openEdit = (t: Teacher) => {
