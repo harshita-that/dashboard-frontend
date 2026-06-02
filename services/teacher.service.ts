@@ -1,25 +1,26 @@
 import api from "@/lib/axios";
-import type { Teacher, CreateTeacherDto, PaginatedResponse, ListParams } from "@/types";
+import type { Teacher, CreateTeacherDto, ListParams } from "@/types";
+import { normalizeTeacher, parsePaginated } from "@/lib/normalizers";
 
 export const teacherService = {
-  getAll: async (params?: ListParams): Promise<PaginatedResponse<Teacher>> => {
+  getAll: async (params?: ListParams) => {
     const { data } = await api.get("/api/teachers", { params });
-    return data.data ?? data;
+    return parsePaginated<Teacher>(data, normalizeTeacher);
   },
 
   getById: async (id: string): Promise<Teacher> => {
     const { data } = await api.get(`/api/teachers/${id}`);
-    return data.data ?? data;
+    return normalizeTeacher(data.data ?? data) as unknown as Teacher;
   },
 
   create: async (payload: CreateTeacherDto): Promise<Teacher> => {
     const { data } = await api.post("/api/teachers", payload);
-    return data.data ?? data;
+    return normalizeTeacher(data.data ?? data) as unknown as Teacher;
   },
 
   update: async (id: string, payload: Partial<CreateTeacherDto>): Promise<Teacher> => {
     const { data } = await api.put(`/api/teachers/${id}`, payload);
-    return data.data ?? data;
+    return normalizeTeacher(data.data ?? data) as unknown as Teacher;
   },
 
   delete: async (id: string): Promise<void> => {

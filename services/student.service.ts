@@ -1,25 +1,27 @@
 import api from "@/lib/axios";
-import type { Student, CreateStudentDto, PaginatedResponse, ListParams } from "@/types";
+import type { Student, CreateStudentDto, ListParams } from "@/types";
+import { normalizeStudent, parsePaginated } from "@/lib/normalizers";
 
 export const studentService = {
-  getAll: async (params?: ListParams): Promise<PaginatedResponse<Student>> => {
+  getAll: async (params?: ListParams) => {
     const { data } = await api.get("/api/students", { params });
-    return data.data ?? data;
+    return parsePaginated<Student>(data, normalizeStudent);
   },
 
   getById: async (id: string): Promise<Student> => {
     const { data } = await api.get(`/api/students/${id}`);
-    return data.data ?? data;
+    const raw = data.data ?? data;
+    return normalizeStudent(raw) as unknown as Student;
   },
 
   create: async (payload: CreateStudentDto): Promise<Student> => {
     const { data } = await api.post("/api/students", payload);
-    return data.data ?? data;
+    return normalizeStudent(data.data ?? data) as unknown as Student;
   },
 
   update: async (id: string, payload: Partial<CreateStudentDto>): Promise<Student> => {
     const { data } = await api.put(`/api/students/${id}`, payload);
-    return data.data ?? data;
+    return normalizeStudent(data.data ?? data) as unknown as Student;
   },
 
   delete: async (id: string): Promise<void> => {

@@ -46,15 +46,13 @@ export default function TeachersPage() {
   const fetchTeachers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await teacherService.getAll({ page, limit: 10 });
-      const rows = Array.isArray(res) ? res : (res as { data: Teacher[] }).data ?? [];
-      const pagination = (res as { pagination?: { total: number; pages: number } }).pagination;
-      setTeachers(rows);
-      setTotal(pagination?.total ?? rows.length);
-      setTotalPages(pagination?.pages ?? 1);
+      const res = await teacherService.getAll({ page, limit: 10, search });
+      setTeachers(res.data);
+      setTotal(res.pagination.total);
+      setTotalPages(res.pagination.pages);
     } catch { toast("Failed to load teachers", { variant: "destructive" }); }
     finally { setLoading(false); }
-  }, [page]);
+  }, [page, search]);
 
   useEffect(() => { fetchTeachers(); }, [fetchTeachers]);
 

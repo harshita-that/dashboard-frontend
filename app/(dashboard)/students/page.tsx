@@ -55,11 +55,9 @@ export default function StudentsPage() {
     setLoading(true);
     try {
       const res = await studentService.getAll({ page, limit: 10, search });
-      const rows = Array.isArray(res) ? res : (res as { data: Student[] }).data ?? [];
-      const pagination = (res as { pagination?: { total: number; pages: number } }).pagination;
-      setStudents(rows);
-      setTotal(pagination?.total ?? rows.length);
-      setTotalPages(pagination?.pages ?? 1);
+      setStudents(res.data);
+      setTotal(res.pagination.total);
+      setTotalPages(res.pagination.pages);
     } catch { toast("Failed to load students", { variant: "destructive" }); }
     finally { setLoading(false); }
   }, [page, search]);
