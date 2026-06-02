@@ -159,12 +159,41 @@ function AdminDashboard() {
           {loading ? <div className="h-56 bg-muted animate-pulse rounded-xl" /> : (
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
-                <Pie data={stats?.gradeDistribution ?? []} dataKey="count" nameKey="grade" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3}>
-                  {(stats?.gradeDistribution ?? []).map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-                </Pie>
-                <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 12 }} />
-                <Legend iconSize={10} iconType="circle" wrapperStyle={{ fontSize: 12 }} />
-              </PieChart>
+  <Pie
+    data={stats?.gradeDistribution ?? []}
+    dataKey="count"
+    nameKey="grade"
+    cx="50%"
+    cy="50%"
+    innerRadius={50}
+    outerRadius={80}
+    paddingAngle={3}
+  >
+    {(stats?.gradeDistribution ?? []).map(
+      (_: unknown, i: number) => (
+        <Cell
+          key={i}
+          fill={PIE_COLORS[i % PIE_COLORS.length]}
+        />
+      )
+    )}
+  </Pie>
+
+  <Tooltip
+    contentStyle={{
+      background: "hsl(var(--popover))",
+      border: "1px solid hsl(var(--border))",
+      borderRadius: 12,
+      fontSize: 12,
+    }}
+  />
+
+  <Legend
+    iconSize={10}
+    iconType="circle"
+    wrapperStyle={{ fontSize: 12 }}
+  />
+</PieChart>
             </ResponsiveContainer>
           )}
         </div>
