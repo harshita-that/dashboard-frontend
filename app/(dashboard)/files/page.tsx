@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { fileService } from "@/services/file.service";
 import type { FileRecord } from "@/types";
 import { Button, IconButton } from "@/components/ui/button";
@@ -23,18 +23,22 @@ export default function FilesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [fetchKey, setFetchKey] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const fetchFiles = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fileService.getAll();
-      setFiles(Array.isArray(res) ? res : (res as { data: FileRecord[] }).data ?? []);
-    } catch { toast("Failed to load files", { variant: "destructive" }); }
-    finally { setLoading(false); }
-  }, []);
-
-  useEffect(() => { fetchFiles(); }, [fetchFiles]);
+  useEffect(() => {
+    let cancelled = false;
+    const fetchFiles = async () => {
+      setLoading(true);
+      try {
+        const res = await fileService.getAll();
+        if (!cancelled) setFiles(Array.isArray(res) ? res : (res as { data: FileRecord[] }).data ?? []);
+      } catch { if (!cancelled) toast("Failed to load files", { variant: "destructive" }); }
+      finally { if (!cancelled) setLoading(false); }
+    };
+    fetchFiles();
+    return () => { cancelled = true; };
+  }, [fetchKey]);
 
   const handleUpload = async (file: File) => {
     const maxSize = 5 * 1024 * 1024;
@@ -47,7 +51,7 @@ export default function FilesPage() {
     try {
       await fileService.upload(file, setUploadProgress);
       toast("File uploaded!", { variant: "success" });
-      fetchFiles();
+      setFetchKey((k) => k + 1);
     } catch (e: unknown) {
       toast((e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Upload failed", { variant: "destructive" });
     } finally { setUploading(false); setUploadProgress(0); }
@@ -68,7 +72,7 @@ export default function FilesPage() {
   const handleDelete = async () => {
     if (!deleteId) return;
     setDeleteLoading(true);
-    try { await fileService.delete(deleteId); toast("File deleted", { variant: "success" }); fetchFiles(); }
+    try { await fileService.delete(deleteId); toast("File deleted", { variant: "success" }); setFetchKey((k) => k + 1); }
     catch { toast("Failed to delete", { variant: "destructive" }); }
     finally { setDeleteLoading(false); setDeleteId(null); }
   };
